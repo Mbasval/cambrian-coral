@@ -24,6 +24,7 @@
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
             pointer-events: none; /* Makes it non-interactive */
+            z-index: 1;
         }
         h2, h3 {
             margin: 10px 0;
@@ -167,12 +168,12 @@
         function animateLine(branch) {
             let startX = branch.x1 + waveMovement;
             let startY = branch.y1;
-            let endX = descriptionElement.elt.offsetLeft + 40; 
+            let endX = descriptionElement.elt.offsetLeft + 40;
             let endY = descriptionElement.elt.offsetTop + 30;
             let lineWidth = dist(startX, startY, endX, endY) * lineProgress;
             lineElement.style('width', lineWidth + 'px');
 
-            let angle = atan2(endY - startY, endX - startX);
+            let angle = atan2(endY - startY, endX - startY);
             let offsetX = cos(angle) * lineWidth;
             let offsetY = sin(angle) * lineWidth;
 
@@ -200,3 +201,4 @@
     </script>
 </body>
 </html>
+
