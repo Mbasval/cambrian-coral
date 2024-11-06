@@ -20,9 +20,10 @@
             padding: 20px;
             background-color: rgba(0, 0, 0, 0.7);
             border-radius: 5px;
-            color: white;
+            color: #FFD700;
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
+            pointer-events: none; /* Makes it non-interactive */
         }
         h2, h3 {
             margin: 10px 0;
@@ -30,6 +31,13 @@
         p {
             margin: 10px 0;
             line-height: 1.6;
+        }
+        .line {
+            position: absolute;
+            background-color: #FFD700;
+            height: 2px;
+            width: 0;
+            transition: width 0.5s ease;
         }
     </style>
 </head>
@@ -84,6 +92,7 @@
         let waveMovement = 0;
         let selectedBranch = null;
         let descriptionElement = null;
+        let lineElement = null;
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
@@ -91,6 +100,7 @@
             coralY = height;
             generateCoral(coralX, coralY, -PI / 2, 200, maxDepth);
             descriptionElement = createDiv('').id('description');
+            lineElement = createDiv('').id('line').addClass('line');
         }
 
         function draw() {
@@ -123,9 +133,11 @@
 
             if (closestBranch && closestBranch.label) {
                 lineProgress = min(lineProgress + 0.05, 1);
+                animateLine(closestBranch);
                 drawTextBox(closestBranch);
             } else {
                 showText = false; 
+                lineElement.style('width', '0px'); // Hide line
             }
 
             waveOffset += 0.01;
@@ -143,28 +155,47 @@
                     branches.push({
                         x1: x, y1: y, x2: xEnd, y2: yEnd, 
                         thickness: thickness, noiseOffset: noiseOffset, 
-                        depth: depth, label: menuItems[branches.length % menuItems.length]
-                    });
-                } else {
-                    branches.push({
-                        x1: x, y1: y, x2: xEnd, y2: yEnd, 
-                        thickness: thickness, noiseOffset: noiseOffset, 
-                        depth: depth
+                        depth: depth, label: menuItems[branches.length] 
                     });
                 }
 
-                generateCoral(xEnd, yEnd, angle - angleVariation, length * 0.75, depth - 1);
-                generateCoral(xEnd, yEnd, angle, length * 0.8, depth - 1);
-                generateCoral(xEnd, yEnd, angle + angleVariation, length * 0.75, depth - 1);
+                generateCoral(xEnd, yEnd, angle + random(-angleVariation, angleVariation), length * 0.7, depth - 1);
+                generateCoral(xEnd, yEnd, angle + random(-angleVariation, angleVariation), length * 0.7, depth - 1);
             }
         }
 
-        function drawTextBox(branch) {
-            let textX = width * 0.6;
-            let textY = height * 0.2;
+        function animateLine(branch) {
+            let startX = branch.x1 + waveMovement;
+            let startY = branch.y1;
+            let endX = descriptionElement.elt.offsetLeft + 40; 
+            let endY = descriptionElement.elt.offsetTop + 30;
+            let lineWidth = dist(startX, startY, endX, endY) * lineProgress;
+            lineElement.style('width', lineWidth + 'px');
 
+            let angle = atan2(endY - startY, endX - startX);
+            let offsetX = cos(angle) * lineWidth;
+            let offsetY = sin(angle) * lineWidth;
+
+            lineElement.style('left', startX + 'px');
+            lineElement.style('top', startY + 'px');
+            lineElement.style('transform', `rotate(${angle}rad)`);
+        }
+
+        function drawTextBox(branch) {
             descriptionElement.html(branch.label.title + '<br>' + branch.label.subtitle + branch.label.text);
             descriptionElement.style('opacity', '1');
+        }
+
+        function mouseMoved() {
+            if (!selectedBranch) {
+                showText = false;
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            coralX = width * 0.3;
+            coralY = height;
         }
     </script>
 </body>
