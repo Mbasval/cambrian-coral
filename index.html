@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Abundant Cambrian Coral Menu</title>
+    <title>Interactive Cambrian Coral Menu</title>
     <style>
         body {
             margin: 0;
@@ -25,36 +25,34 @@
             createCanvas(windowWidth, windowHeight);
             coralX = width * 0.5;  // Centered horizontally
             coralY = height;       // Starts at footer
-            generateCoral(coralX, coralY, -PI / 2, 120, maxDepth);
+            generateCoral(coralX, coralY, -PI / 2, 160, maxDepth);
         }
 
         function draw() {
             background(0);
             stroke(255, 215, 0, 180);
-            strokeWeight(2);
 
             branches.forEach(branch => {
                 let d = dist(mouseX, mouseY, branch.x1, branch.y1);
-                let openFactor = constrain(map(d, 0, 300, 1.5, 0.7), 0.7, 1.5);
+                let openFactor = constrain(map(d, 0, 250, 0.5, 1.5), 0.5, 1.5); // Controlled opening
+                
+                // "Closed" fan appearance by default, opening with hover
+                let branchAngleOffset = sin(waveOffset + branch.noiseOffset) * 5 * (1 / (branch.depth + 1)); 
+                let x2 = lerp(branch.x1, branch.x2 + branchAngleOffset, openFactor);
+                let y2 = lerp(branch.y1, branch.y2 + branchAngleOffset, openFactor);
 
-                // Underwater waving effect
-                let waveAmount = sin(waveOffset + branch.noiseOffset) * 5;
-                let x2 = lerp(branch.x1, branch.x2 + waveAmount, openFactor);
-                let y2 = lerp(branch.y1, branch.y2 + waveAmount, openFactor);
-
-                // Draw branch with thickness
+                // Set thickness, color, and smooth texture
                 strokeWeight(branch.thickness);
                 stroke(255, 215, 0, 150 + 50 * sin(frameCount * 0.02 + branch.noiseOffset));
                 line(branch.x1, branch.y1, x2, y2);
 
-                // Display label on hover with proximity-based font size
+                // Display label with positioning adjustments to reduce clustering
                 if (branch.label && d < 200) {
                     fill(255, 215, 0, map(d, 200, 0, 0, 255));
                     noStroke();
-                    let fontSize = map(d, 200, 0, 12, 24);
-                    textSize(fontSize);
-                    textAlign(CENTER, CENTER);
-                    text(branch.label, x2 + 5, y2 - 5);
+                    textSize(map(d, 200, 0, 14, 26));
+                    textAlign(CENTER);
+                    text(branch.label, x2 + 15, y2 - 15);
                 }
             });
 
@@ -63,30 +61,34 @@
 
         function generateCoral(x, y, angle, length, depth) {
             if (depth > 0) {
+                let angleVariation = PI / 8;  // Reduced angle for fan-like starting position
                 let xEnd = x + cos(angle) * length;
                 let yEnd = y + sin(angle) * length;
                 
-                let thickness = map(depth, maxDepth, 1, 12, 1);
-                let noiseOffset = random(1000);  // Unique offset for each branch
-                branches.push({x1: x, y1: y, x2: xEnd, y2: yEnd, thickness: thickness, noiseOffset: noiseOffset});
+                let thickness = map(depth, maxDepth, 1, 14, 1);  // Thicker at base, thinner at tips
+                let noiseOffset = random(1000);
+                branches.push({
+                    x1: x, y1: y, x2: xEnd, y2: yEnd, 
+                    thickness: thickness, noiseOffset: noiseOffset, 
+                    depth: depth
+                });
 
-                // Add menu item labels at specific depth branches
+                // Attach menu labels only to main branches
                 if (depth <= menuItems.length) {
                     branches[branches.length - 1].label = menuItems[menuItems.length - depth];
                 }
 
-                // Generate three sub-branches for a fuller, abundant look
-                let angleVariation = PI / 10;
-                generateCoral(xEnd, yEnd, angle - PI / 4 + random(-angleVariation, angleVariation), length * 0.65, depth - 1);
-                generateCoral(xEnd, yEnd, angle, length * 0.7, depth - 1);
-                generateCoral(xEnd, yEnd, angle + PI / 4 + random(-angleVariation, angleVariation), length * 0.65, depth - 1);
+                // Fan-like branching structure, generating three branches at each point
+                generateCoral(xEnd, yEnd, angle - angleVariation, length * 0.6, depth - 1);
+                generateCoral(xEnd, yEnd, angle, length * 0.65, depth - 1);
+                generateCoral(xEnd, yEnd, angle + angleVariation, length * 0.6, depth - 1);
             }
         }
 
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
             branches = [];
-            generateCoral(coralX, coralY, -PI / 2, 120, maxDepth);
+            generateCoral(coralX, coralY, -PI / 2, 160, maxDepth);
         }
     </script>
 </body>
