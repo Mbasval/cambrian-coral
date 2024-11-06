@@ -18,12 +18,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
         let menuItems = [
-            { title: "Home", subtitle: "Welcome Home", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
-            { title: "About", subtitle: "Who We Are", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
-            { title: "Services", subtitle: "What We Do", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
-            { title: "Portfolio", subtitle: "Our Work", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
-            { title: "Blog", subtitle: "Latest News", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
-            { title: "Contact", subtitle: "Get in Touch", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." }
+            { title: "Home", subtitle: "Welcome Home", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris." },
+            { title: "About", subtitle: "Who We Are", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris." },
+            { title: "Services", subtitle: "What We Do", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris." },
+            { title: "Portfolio", subtitle: "Our Work", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris." },
+            { title: "Blog", subtitle: "Latest News", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris." },
+            { title: "Contact", subtitle: "Get in Touch", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris." }
         ];
         let branches = [];
         let coralX, coralY;
@@ -33,6 +33,7 @@
         let showText = false;
         let lineProgress = 0;
         let waveMovement = 0; // For underwater current movement
+        let selectedBranch = null; // Track the selected branch for description
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
@@ -52,9 +53,10 @@
 
             branches.forEach(branch => {
                 let d = dist(mouseX, mouseY, branch.x1 + waveMovement, branch.y1);
-                if (d < minDist) {
+                if (d < minDist && branch.depth === 1) { // Only interact with leaf branches (depth === 1)
                     minDist = d;
                     closestBranch = branch;
+                    selectedBranch = branch;
                     showText = true;
                     lineProgress = 0; // Reset line animation
                 }
@@ -87,11 +89,19 @@
 
                 let thickness = map(depth, maxDepth, 1, 18, 2);
                 let noiseOffset = random(1000);
-                branches.push({
-                    x1: x, y1: y, x2: xEnd, y2: yEnd, 
-                    thickness: thickness, noiseOffset: noiseOffset, 
-                    depth: depth, label: menuItems[maxDepth - depth]
-                });
+                if (depth === 1) { // Only the last level branches will have menu labels
+                    branches.push({
+                        x1: x, y1: y, x2: xEnd, y2: yEnd, 
+                        thickness: thickness, noiseOffset: noiseOffset, 
+                        depth: depth, label: menuItems[branches.length % menuItems.length]
+                    });
+                } else {
+                    branches.push({
+                        x1: x, y1: y, x2: xEnd, y2: yEnd, 
+                        thickness: thickness, noiseOffset: noiseOffset, 
+                        depth: depth
+                    });
+                }
 
                 generateCoral(xEnd, yEnd, angle - angleVariation, length * 0.75, depth - 1);
                 generateCoral(xEnd, yEnd, angle, length * 0.8, depth - 1);
@@ -115,16 +125,16 @@
             }
 
             // Display title, subtitle, and paragraph at fixed position if hovering
-            if (showText) {
+            if (showText && selectedBranch) {
                 fill(255, 215, 0);
                 noStroke();
                 textAlign(LEFT, TOP);
                 textSize(20);
-                text(branch.label.title, textX, textY);
+                text(selectedBranch.label.title, textX, textY);
                 textSize(14);
-                text(branch.label.subtitle, textX, textY + 24);
+                text(selectedBranch.label.subtitle, textX, textY + 24);
                 textSize(12);
-                text(branch.label.text, textX, textY + 50, 300, 200); // Long placeholder text (5 paragraphs)
+                text(selectedBranch.label.text, textX, textY + 50, 300, 300); // Long placeholder text (5 paragraphs)
             }
         }
 
