@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cambrian Coral Interactive Menu</title>
+    <title>Interactive Cambrian Coral Menu</title>
     <style>
         body {
             margin: 0;
@@ -15,36 +15,42 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
-        let menuItems = ["Home", "About", "Projects", "Contact"];
+        let menuItems = ["Home", "About", "Services", "Portfolio", "Blog", "Contact"];
         let branches = [];
         let coralX, coralY;
+        let maxDepth = 6;  // Increase to create more branches
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            coralX = width * 0.4;
-            coralY = height * 0.6;
-            generateCoral(coralX, coralY, -PI / 2, 120, 5);
+            coralX = width * 0.35;
+            coralY = height * 0.55;
+            generateCoral(coralX, coralY, -PI / 2, 160, maxDepth);
         }
 
         function draw() {
             background(0);
-            stroke(255, 215, 0);
+            stroke(255, 215, 0, 180);
             strokeWeight(2);
 
             branches.forEach(branch => {
                 let d = dist(mouseX, mouseY, branch.x1, branch.y1);
-                let openFactor = constrain(map(d, 0, 200, 1.5, 0.5), 0.5, 1.5);
-                let x2 = lerp(branch.x1, branch.x2, openFactor);
-                let y2 = lerp(branch.y1, branch.y2, openFactor);
-                
+                let openFactor = constrain(map(d, 0, 250, 1.5, 0.5), 0.5, 1.5);
+
+                let textureOffset = noise(branch.noiseOffset) * 20;
+                let x2 = lerp(branch.x1, branch.x2 + textureOffset, openFactor);
+                let y2 = lerp(branch.y1, branch.y2 + textureOffset, openFactor);
+
                 strokeWeight(branch.thickness);
+                stroke(255, 215, 0, 150 + 50 * sin(frameCount * 0.02 + branch.noiseOffset)); // Animated texture
                 line(branch.x1, branch.y1, x2, y2);
 
-                if (branch.label && d < 150) {
-                    fill(255, 215, 0, 200);
+                // Display label on hover
+                if (branch.label && d < 200) {
+                    fill(255, 215, 0, map(d, 200, 0, 0, 255));
                     noStroke();
-                    let fontSize = map(d, 150, 0, 12, 20);
+                    let fontSize = map(d, 200, 0, 12, 24);
                     textSize(fontSize);
+                    textAlign(CENTER, CENTER);
                     text(branch.label, x2 + 5, y2 - 5);
                 }
             });
@@ -55,25 +61,26 @@
                 let xEnd = x + cos(angle) * length;
                 let yEnd = y + sin(angle) * length;
                 
-                let thickness = map(depth, 5, 1, 8, 1);  // Thicker for base branches, thinner for tips
-                branches.push({x1: x, y1: y, x2: xEnd, y2: yEnd, thickness: thickness});
+                let thickness = map(depth, maxDepth, 1, 10, 1);  // Thicker at base, thinner at tips
+                let noiseOffset = random(1000);  // Unique noise offset for each branch
+                branches.push({x1: x, y1: y, x2: xEnd, y2: yEnd, thickness: thickness, noiseOffset: noiseOffset});
 
                 // Add menu item labels to specific branches
                 if (depth <= menuItems.length) {
                     branches[branches.length - 1].label = menuItems[menuItems.length - depth];
                 }
 
-                // Generate two sub-branches with slight variations for an organic look
-                let angleVariation = PI / 10;
-                generateCoral(xEnd, yEnd, angle - PI / 6 + random(-angleVariation, angleVariation), length * 0.7, depth - 1);
-                generateCoral(xEnd, yEnd, angle + PI / 6 + random(-angleVariation, angleVariation), length * 0.7, depth - 1);
+                // Generate two sub-branches with slight variations for organic layout
+                let angleVariation = PI / 12;
+                generateCoral(xEnd, yEnd, angle - PI / 5 + random(-angleVariation, angleVariation), length * 0.75, depth - 1);
+                generateCoral(xEnd, yEnd, angle + PI / 5 + random(-angleVariation, angleVariation), length * 0.75, depth - 1);
             }
         }
 
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
             branches = [];
-            generateCoral(coralX, coralY, -PI / 2, 120, 5);
+            generateCoral(coralX, coralY, -PI / 2, 160, maxDepth);
         }
     </script>
 </body>
