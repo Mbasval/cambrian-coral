@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Cambrian Coral Menu</title>
+    <title>Responsive Coral Tree Menu</title>
     <style>
         body {
             margin: 0;
@@ -15,7 +15,17 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
-        let menuItems = ["Home", "About", "Services", "Portfolio", "Blog", "Contact", "FAQ", "Careers", "Gallery"];
+        let menuItems = [
+            { title: "Home", text: "Welcome to our site." },
+            { title: "About", text: "Learn more about us." },
+            { title: "Services", text: "Our services include..." },
+            { title: "Portfolio", text: "Browse our portfolio." },
+            { title: "Blog", text: "Read our latest posts." },
+            { title: "Contact", text: "Get in touch with us." },
+            { title: "FAQ", text: "Frequently Asked Questions." },
+            { title: "Careers", text: "Join our team." },
+            { title: "Gallery", text: "Explore our gallery." }
+        ];
         let branches = [];
         let coralX, coralY;
         let maxDepth = 6;
@@ -23,49 +33,46 @@
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            coralX = width * 0.5;  // Centered horizontally
-            coralY = height;       // Starts at footer
+            coralX = width * 0.3; // Positioned to the left
+            coralY = height;      // Start from the footer
             generateCoral(coralX, coralY, -PI / 2, 160, maxDepth);
         }
 
         function draw() {
             background(0);
             stroke(255, 215, 0, 180);
+            strokeWeight(2);
 
             branches.forEach(branch => {
                 let d = dist(mouseX, mouseY, branch.x1, branch.y1);
-                let openFactor = constrain(map(d, 0, 250, 0.5, 1.5), 0.5, 1.5); // Controlled opening
+                let openFactor = constrain(map(d, 0, 300, 0.5, 1.5), 0.5, 1.5);
                 
-                // "Closed" fan appearance by default, opening with hover
-                let branchAngleOffset = sin(waveOffset + branch.noiseOffset) * 5 * (1 / (branch.depth + 1)); 
+                // Fan-like opening effect
+                let branchAngleOffset = sin(waveOffset + branch.noiseOffset) * 8 * (1 / (branch.depth + 1));
                 let x2 = lerp(branch.x1, branch.x2 + branchAngleOffset, openFactor);
                 let y2 = lerp(branch.y1, branch.y2 + branchAngleOffset, openFactor);
 
-                // Set thickness, color, and smooth texture
+                // Draw branches with improved design
                 strokeWeight(branch.thickness);
                 stroke(255, 215, 0, 150 + 50 * sin(frameCount * 0.02 + branch.noiseOffset));
                 line(branch.x1, branch.y1, x2, y2);
 
-                // Display label with positioning adjustments to reduce clustering
-                if (branch.label && d < 200) {
-                    fill(255, 215, 0, map(d, 200, 0, 0, 255));
-                    noStroke();
-                    textSize(map(d, 200, 0, 14, 26));
-                    textAlign(CENTER);
-                    text(branch.label, x2 + 15, y2 - 15);
+                // Display title and text with transition lines for readability
+                if (branch.label && d < 250) {
+                    drawTextBox(branch, x2, y2, d);
                 }
             });
 
-            waveOffset += 0.01;  // Increment for subtle underwater movement
+            waveOffset += 0.01;  // Idle underwater animation
         }
 
         function generateCoral(x, y, angle, length, depth) {
             if (depth > 0) {
-                let angleVariation = PI / 8;  // Reduced angle for fan-like starting position
+                let angleVariation = PI / 10;
                 let xEnd = x + cos(angle) * length;
                 let yEnd = y + sin(angle) * length;
                 
-                let thickness = map(depth, maxDepth, 1, 14, 1);  // Thicker at base, thinner at tips
+                let thickness = map(depth, maxDepth, 1, 16, 2);
                 let noiseOffset = random(1000);
                 branches.push({
                     x1: x, y1: y, x2: xEnd, y2: yEnd, 
@@ -73,16 +80,34 @@
                     depth: depth
                 });
 
-                // Attach menu labels only to main branches
                 if (depth <= menuItems.length) {
                     branches[branches.length - 1].label = menuItems[menuItems.length - depth];
                 }
 
-                // Fan-like branching structure, generating three branches at each point
-                generateCoral(xEnd, yEnd, angle - angleVariation, length * 0.6, depth - 1);
-                generateCoral(xEnd, yEnd, angle, length * 0.65, depth - 1);
-                generateCoral(xEnd, yEnd, angle + angleVariation, length * 0.6, depth - 1);
+                generateCoral(xEnd, yEnd, angle - angleVariation, length * 0.7, depth - 1);
+                generateCoral(xEnd, yEnd, angle, length * 0.75, depth - 1);
+                generateCoral(xEnd, yEnd, angle + angleVariation, length * 0.7, depth - 1);
             }
+        }
+
+        function drawTextBox(branch, x2, y2, distance) {
+            fill(255, 215, 0, map(distance, 200, 0, 0, 255));
+            noStroke();
+
+            // Draw connection line from branch to text box
+            stroke(255, 215, 0, 180);
+            strokeWeight(1);
+            let textX = x2 + 80;
+            let textY = y2 - 20;
+            line(x2, y2, textX, textY);
+
+            // Display title and content
+            noStroke();
+            textAlign(LEFT, TOP);
+            textSize(map(distance, 300, 0, 12, 20));
+            text(branch.label.title, textX, textY);
+            textSize(map(distance, 300, 0, 10, 16));
+            text(branch.label.text, textX, textY + 24, 200, 200); // Wrap text within 200px width
         }
 
         function windowResized() {
