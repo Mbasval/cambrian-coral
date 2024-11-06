@@ -9,6 +9,8 @@
             margin: 0;
             overflow: hidden;
             background-color: black;
+            color: #FFD700;
+            font-family: Arial, sans-serif;
         }
     </style>
 </head>
@@ -16,15 +18,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
         let menuItems = [
-            { title: "Home", text: "Welcome to our site." },
-            { title: "About", text: "Learn more about us." },
-            { title: "Services", text: "Our services include..." },
-            { title: "Portfolio", text: "Browse our portfolio." },
-            { title: "Blog", text: "Read our latest posts." },
-            { title: "Contact", text: "Get in touch with us." },
-            { title: "FAQ", text: "Frequently Asked Questions." },
-            { title: "Careers", text: "Join our team." },
-            { title: "Gallery", text: "Explore our gallery." }
+            { title: "Home", subtitle: "Welcome Home", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
+            { title: "About", subtitle: "Who We Are", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
+            { title: "Services", subtitle: "What We Do", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
+            { title: "Portfolio", subtitle: "Our Work", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
+            { title: "Blog", subtitle: "Latest News", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
+            { title: "Contact", subtitle: "Get in Touch", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." }
         ];
         let branches = [];
         let coralX, coralY;
@@ -41,8 +40,7 @@
 
         function draw() {
             background(0);
-            stroke(255, 215, 0, 180);
-
+            stroke(255, 215, 0);
             let minDist = Infinity;
             closestBranch = null;
 
@@ -58,13 +56,12 @@
                 let x2 = lerp(branch.x1, branch.x2 + branchAngleOffset, openFactor);
                 let y2 = lerp(branch.y1, branch.y2 + branchAngleOffset, openFactor);
 
-                strokeWeight(branch.thickness + sin(branch.noiseOffset) * 0.5); // Textured appearance
-                stroke(255, 215, 0, 150 + 50 * sin(frameCount * 0.02 + branch.noiseOffset));
+                strokeWeight(branch.thickness); // Solid color for main branches
                 line(branch.x1, branch.y1, x2, y2);
             });
 
             if (closestBranch && closestBranch.label) {
-                drawTextBox(closestBranch, minDist);
+                drawTextBox(closestBranch);
             }
 
             waveOffset += 0.01;  // Subtle underwater movement
@@ -90,24 +87,25 @@
             }
         }
 
-        function drawTextBox(branch, distance) {
-            fill(255, 215, 0, map(distance, 200, 0, 0, 255));
-            noStroke();
+        function drawTextBox(branch) {
+            let textX = width * 0.6;
+            let textY = height * 0.2;
 
-            // Draw a line connecting to the text box
+            // Draw connection line from branch to text box
             stroke(255, 215, 0, 180);
             strokeWeight(1);
-            let textX = branch.x2 + 120;
-            let textY = branch.y2 - 30;
             line(branch.x2, branch.y2, textX, textY);
 
-            // Display title and text content
+            // Draw the title, subtitle, and paragraph at a fixed position
+            fill(255, 215, 0);
             noStroke();
             textAlign(LEFT, TOP);
-            textSize(18);
+            textSize(20);
             text(branch.label.title, textX, textY);
+            textSize(14);
+            text(branch.label.subtitle, textX, textY + 24);
             textSize(12);
-            text(branch.label.text, textX, textY + 24, 180, 100); // Wrap text within 180px width
+            text(branch.label.text, textX, textY + 50, 300, 200); // Long placeholder text for lore ipsum
         }
 
         function windowResized() {
