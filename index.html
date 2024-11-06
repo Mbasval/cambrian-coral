@@ -30,90 +30,90 @@
         let coralX, coralY;
         let maxDepth = 6;
         let waveOffset = 0;
+        let closestBranch = null;
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
             coralX = width * 0.3; // Positioned to the left
             coralY = height;      // Start from the footer
-            generateCoral(coralX, coralY, -PI / 2, 160, maxDepth);
+            generateCoral(coralX, coralY, -PI / 2, 200, maxDepth); // Larger coral structure
         }
 
         function draw() {
             background(0);
             stroke(255, 215, 0, 180);
-            strokeWeight(2);
+
+            let minDist = Infinity;
+            closestBranch = null;
 
             branches.forEach(branch => {
                 let d = dist(mouseX, mouseY, branch.x1, branch.y1);
-                let openFactor = constrain(map(d, 0, 300, 0.5, 1.5), 0.5, 1.5);
-                
-                // Fan-like opening effect
-                let branchAngleOffset = sin(waveOffset + branch.noiseOffset) * 8 * (1 / (branch.depth + 1));
+                if (d < minDist) {
+                    minDist = d;
+                    closestBranch = branch;
+                }
+
+                let openFactor = constrain(map(d, 0, 300, 0.7, 1), 0.7, 1);
+                let branchAngleOffset = sin(waveOffset + branch.noiseOffset) * 5 * (1 / (branch.depth + 1));
                 let x2 = lerp(branch.x1, branch.x2 + branchAngleOffset, openFactor);
                 let y2 = lerp(branch.y1, branch.y2 + branchAngleOffset, openFactor);
 
-                // Draw branches with improved design
-                strokeWeight(branch.thickness);
+                strokeWeight(branch.thickness + sin(branch.noiseOffset) * 0.5); // Textured appearance
                 stroke(255, 215, 0, 150 + 50 * sin(frameCount * 0.02 + branch.noiseOffset));
                 line(branch.x1, branch.y1, x2, y2);
-
-                // Display title and text with transition lines for readability
-                if (branch.label && d < 250) {
-                    drawTextBox(branch, x2, y2, d);
-                }
             });
 
-            waveOffset += 0.01;  // Idle underwater animation
+            if (closestBranch && closestBranch.label) {
+                drawTextBox(closestBranch, minDist);
+            }
+
+            waveOffset += 0.01;  // Subtle underwater movement
         }
 
         function generateCoral(x, y, angle, length, depth) {
             if (depth > 0) {
-                let angleVariation = PI / 10;
+                let angleVariation = PI / 9; // Reduced for a unified fan shape
                 let xEnd = x + cos(angle) * length;
                 let yEnd = y + sin(angle) * length;
                 
-                let thickness = map(depth, maxDepth, 1, 16, 2);
+                let thickness = map(depth, maxDepth, 1, 18, 2);
                 let noiseOffset = random(1000);
                 branches.push({
                     x1: x, y1: y, x2: xEnd, y2: yEnd, 
                     thickness: thickness, noiseOffset: noiseOffset, 
-                    depth: depth
+                    depth: depth, label: menuItems[maxDepth - depth]
                 });
 
-                if (depth <= menuItems.length) {
-                    branches[branches.length - 1].label = menuItems[menuItems.length - depth];
-                }
-
-                generateCoral(xEnd, yEnd, angle - angleVariation, length * 0.7, depth - 1);
-                generateCoral(xEnd, yEnd, angle, length * 0.75, depth - 1);
-                generateCoral(xEnd, yEnd, angle + angleVariation, length * 0.7, depth - 1);
+                generateCoral(xEnd, yEnd, angle - angleVariation, length * 0.75, depth - 1);
+                generateCoral(xEnd, yEnd, angle, length * 0.8, depth - 1);
+                generateCoral(xEnd, yEnd, angle + angleVariation, length * 0.75, depth - 1);
             }
         }
 
-        function drawTextBox(branch, x2, y2, distance) {
+        function drawTextBox(branch, distance) {
             fill(255, 215, 0, map(distance, 200, 0, 0, 255));
             noStroke();
 
-            // Draw connection line from branch to text box
+            // Draw a line connecting to the text box
             stroke(255, 215, 0, 180);
             strokeWeight(1);
-            let textX = x2 + 80;
-            let textY = y2 - 20;
-            line(x2, y2, textX, textY);
+            let textX = branch.x2 + 120;
+            let textY = branch.y2 - 30;
+            line(branch.x2, branch.y2, textX, textY);
 
-            // Display title and content
+            // Display title and text content
             noStroke();
             textAlign(LEFT, TOP);
-            textSize(map(distance, 300, 0, 12, 20));
+            textSize(18);
             text(branch.label.title, textX, textY);
-            textSize(map(distance, 300, 0, 10, 16));
-            text(branch.label.text, textX, textY + 24, 200, 200); // Wrap text within 200px width
+            textSize(12);
+            text(branch.label.text, textX, textY + 24, 180, 100); // Wrap text within 180px width
         }
 
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
             branches = [];
-            generateCoral(coralX, coralY, -PI / 2, 160, maxDepth);
+            generateCoral(coralX, coralY, -PI / 2, 200, maxDepth); // Regenerate on resize
         }
     </script>
 </body>
