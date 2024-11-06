@@ -18,12 +18,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
         let menuItems = [
-            { title: "Home", subtitle: "Welcome Home", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
-            { title: "About", subtitle: "Who We Are", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
-            { title: "Services", subtitle: "What We Do", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
-            { title: "Portfolio", subtitle: "Our Work", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
-            { title: "Blog", subtitle: "Latest News", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." },
-            { title: "Contact", subtitle: "Get in Touch", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum..." }
+            { title: "Home", subtitle: "Welcome Home", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
+            { title: "About", subtitle: "Who We Are", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
+            { title: "Services", subtitle: "What We Do", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
+            { title: "Portfolio", subtitle: "Our Work", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
+            { title: "Blog", subtitle: "Latest News", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." },
+            { title: "Contact", subtitle: "Get in Touch", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent bibendum nisi nec sem auctor, eget condimentum felis vestibulum." }
         ];
         let branches = [];
         let coralX, coralY;
@@ -32,6 +32,7 @@
         let closestBranch = null;
         let showText = false;
         let lineProgress = 0;
+        let waveMovement = 0; // For underwater current movement
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
@@ -46,8 +47,11 @@
             let minDist = Infinity;
             closestBranch = null;
 
+            // Underwater current movement effect
+            waveMovement = sin(frameCount * 0.01) * 5; // Gentle sway
+
             branches.forEach(branch => {
-                let d = dist(mouseX, mouseY, branch.x1, branch.y1);
+                let d = dist(mouseX, mouseY, branch.x1 + waveMovement, branch.y1);
                 if (d < minDist) {
                     minDist = d;
                     closestBranch = branch;
@@ -62,7 +66,7 @@
 
                 strokeWeight(branch.thickness); 
                 stroke(255, 215, 0, 150 + 50 * sin(branch.noiseOffset)); // Adds transparency
-                line(branch.x1, branch.y1, x2, y2);
+                line(branch.x1 + waveMovement, branch.y1, x2 + waveMovement, y2);
             });
 
             if (closestBranch && closestBranch.label) {
@@ -72,7 +76,7 @@
                 showText = false; // Hide text when not hovering any branch
             }
 
-            waveOffset += 0.01; // Subtle underwater movement
+            waveOffset += 0.01; // Subtle underwater movement for branches
         }
 
         function generateCoral(x, y, angle, length, depth) {
@@ -100,12 +104,15 @@
             let textY = height * 0.2;
 
             // Line animates from branch to text position
-            let lineX = lerp(branch.x2, textX, lineProgress);
+            let lineX = lerp(branch.x2 + waveMovement, textX, lineProgress);
             let lineY = lerp(branch.y2, textY, lineProgress);
 
-            stroke(255, 215, 0, 180);
-            strokeWeight(1);
-            line(branch.x2, branch.y2, lineX, lineY);
+            // Draw the line only when hovering
+            if (lineProgress > 0) {
+                stroke(255, 215, 0, 180);
+                strokeWeight(1);
+                line(branch.x2 + waveMovement, branch.y2, lineX, lineY);
+            }
 
             // Display title, subtitle, and paragraph at fixed position if hovering
             if (showText) {
@@ -117,7 +124,7 @@
                 textSize(14);
                 text(branch.label.subtitle, textX, textY + 24);
                 textSize(12);
-                text(branch.label.text, textX, textY + 50, 300, 200); // Long placeholder text
+                text(branch.label.text, textX, textY + 50, 300, 200); // Long placeholder text (5 paragraphs)
             }
         }
 
