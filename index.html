@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Cambrian Coral Menu</title>
+    <title>Abundant Cambrian Coral Menu</title>
     <style>
         body {
             margin: 0;
@@ -15,16 +15,17 @@
 <body>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
-        let menuItems = ["Home", "About", "Services", "Portfolio", "Blog", "Contact"];
+        let menuItems = ["Home", "About", "Services", "Portfolio", "Blog", "Contact", "FAQ", "Careers", "Gallery"];
         let branches = [];
         let coralX, coralY;
-        let maxDepth = 6;  // Increase to create more branches
+        let maxDepth = 6;
+        let waveOffset = 0;
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
-            coralX = width * 0.35;
-            coralY = height * 0.55;
-            generateCoral(coralX, coralY, -PI / 2, 160, maxDepth);
+            coralX = width * 0.5;  // Centered horizontally
+            coralY = height;       // Starts at footer
+            generateCoral(coralX, coralY, -PI / 2, 120, maxDepth);
         }
 
         function draw() {
@@ -34,17 +35,19 @@
 
             branches.forEach(branch => {
                 let d = dist(mouseX, mouseY, branch.x1, branch.y1);
-                let openFactor = constrain(map(d, 0, 250, 1.5, 0.5), 0.5, 1.5);
+                let openFactor = constrain(map(d, 0, 300, 1.5, 0.7), 0.7, 1.5);
 
-                let textureOffset = noise(branch.noiseOffset) * 20;
-                let x2 = lerp(branch.x1, branch.x2 + textureOffset, openFactor);
-                let y2 = lerp(branch.y1, branch.y2 + textureOffset, openFactor);
+                // Underwater waving effect
+                let waveAmount = sin(waveOffset + branch.noiseOffset) * 5;
+                let x2 = lerp(branch.x1, branch.x2 + waveAmount, openFactor);
+                let y2 = lerp(branch.y1, branch.y2 + waveAmount, openFactor);
 
+                // Draw branch with thickness
                 strokeWeight(branch.thickness);
-                stroke(255, 215, 0, 150 + 50 * sin(frameCount * 0.02 + branch.noiseOffset)); // Animated texture
+                stroke(255, 215, 0, 150 + 50 * sin(frameCount * 0.02 + branch.noiseOffset));
                 line(branch.x1, branch.y1, x2, y2);
 
-                // Display label on hover
+                // Display label on hover with proximity-based font size
                 if (branch.label && d < 200) {
                     fill(255, 215, 0, map(d, 200, 0, 0, 255));
                     noStroke();
@@ -54,6 +57,8 @@
                     text(branch.label, x2 + 5, y2 - 5);
                 }
             });
+
+            waveOffset += 0.01;  // Increment for subtle underwater movement
         }
 
         function generateCoral(x, y, angle, length, depth) {
@@ -61,26 +66,27 @@
                 let xEnd = x + cos(angle) * length;
                 let yEnd = y + sin(angle) * length;
                 
-                let thickness = map(depth, maxDepth, 1, 10, 1);  // Thicker at base, thinner at tips
-                let noiseOffset = random(1000);  // Unique noise offset for each branch
+                let thickness = map(depth, maxDepth, 1, 12, 1);
+                let noiseOffset = random(1000);  // Unique offset for each branch
                 branches.push({x1: x, y1: y, x2: xEnd, y2: yEnd, thickness: thickness, noiseOffset: noiseOffset});
 
-                // Add menu item labels to specific branches
+                // Add menu item labels at specific depth branches
                 if (depth <= menuItems.length) {
                     branches[branches.length - 1].label = menuItems[menuItems.length - depth];
                 }
 
-                // Generate two sub-branches with slight variations for organic layout
-                let angleVariation = PI / 12;
-                generateCoral(xEnd, yEnd, angle - PI / 5 + random(-angleVariation, angleVariation), length * 0.75, depth - 1);
-                generateCoral(xEnd, yEnd, angle + PI / 5 + random(-angleVariation, angleVariation), length * 0.75, depth - 1);
+                // Generate three sub-branches for a fuller, abundant look
+                let angleVariation = PI / 10;
+                generateCoral(xEnd, yEnd, angle - PI / 4 + random(-angleVariation, angleVariation), length * 0.65, depth - 1);
+                generateCoral(xEnd, yEnd, angle, length * 0.7, depth - 1);
+                generateCoral(xEnd, yEnd, angle + PI / 4 + random(-angleVariation, angleVariation), length * 0.65, depth - 1);
             }
         }
 
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
             branches = [];
-            generateCoral(coralX, coralY, -PI / 2, 160, maxDepth);
+            generateCoral(coralX, coralY, -PI / 2, 120, maxDepth);
         }
     </script>
 </body>
