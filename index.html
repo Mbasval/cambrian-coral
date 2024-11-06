@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cambrian Coral Menu</title>
+    <title>Cambrian Coral Interactive Menu</title>
     <style>
         body {
             margin: 0;
@@ -23,15 +23,30 @@
             createCanvas(windowWidth, windowHeight);
             coralX = width * 0.4;
             coralY = height * 0.6;
-            generateCoral(coralX, coralY, -PI / 2, 120, 4);
+            generateCoral(coralX, coralY, -PI / 2, 120, 5);
         }
 
         function draw() {
             background(0);
             stroke(255, 215, 0);
             strokeWeight(2);
+
             branches.forEach(branch => {
-                line(branch.x1, branch.y1, branch.x2, branch.y2);
+                let d = dist(mouseX, mouseY, branch.x1, branch.y1);
+                let openFactor = constrain(map(d, 0, 200, 1.5, 0.5), 0.5, 1.5);
+                let x2 = lerp(branch.x1, branch.x2, openFactor);
+                let y2 = lerp(branch.y1, branch.y2, openFactor);
+                
+                strokeWeight(branch.thickness);
+                line(branch.x1, branch.y1, x2, y2);
+
+                if (branch.label && d < 150) {
+                    fill(255, 215, 0, 200);
+                    noStroke();
+                    let fontSize = map(d, 150, 0, 12, 20);
+                    textSize(fontSize);
+                    text(branch.label, x2 + 5, y2 - 5);
+                }
             });
         }
 
@@ -39,26 +54,26 @@
             if (depth > 0) {
                 let xEnd = x + cos(angle) * length;
                 let yEnd = y + sin(angle) * length;
-                branches.push({x1: x, y1: y, x2: xEnd, y2: yEnd});
+                
+                let thickness = map(depth, 5, 1, 8, 1);  // Thicker for base branches, thinner for tips
+                branches.push({x1: x, y1: y, x2: xEnd, y2: yEnd, thickness: thickness});
 
-                let itemIndex = menuItems.length - depth;
-                if (itemIndex >= 0) {
-                    let button = createButton(menuItems[itemIndex]);
-                    button.position(xEnd, yEnd);
-                    button.style('color', 'yellow');
-                    button.style('background', 'transparent');
-                    button.style('border', 'none');
+                // Add menu item labels to specific branches
+                if (depth <= menuItems.length) {
+                    branches[branches.length - 1].label = menuItems[menuItems.length - depth];
                 }
 
-                generateCoral(xEnd, yEnd, angle - PI / 6, length * 0.7, depth - 1);
-                generateCoral(xEnd, yEnd, angle + PI / 6, length * 0.7, depth - 1);
+                // Generate two sub-branches with slight variations for an organic look
+                let angleVariation = PI / 10;
+                generateCoral(xEnd, yEnd, angle - PI / 6 + random(-angleVariation, angleVariation), length * 0.7, depth - 1);
+                generateCoral(xEnd, yEnd, angle + PI / 6 + random(-angleVariation, angleVariation), length * 0.7, depth - 1);
             }
         }
 
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
             branches = [];
-            generateCoral(coralX, coralY, -PI / 2, 120, 4);
+            generateCoral(coralX, coralY, -PI / 2, 120, 5);
         }
     </script>
 </body>
