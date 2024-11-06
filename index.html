@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cambrian Coral Menu</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: black;
+        }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <script>
+        let menuItems = ["Home", "About", "Projects", "Contact"];
+        let branches = [];
+        let coralX, coralY;
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            coralX = width * 0.4;
+            coralY = height * 0.6;
+            generateCoral(coralX, coralY, -PI / 2, 120, 4);
+        }
+
+        function draw() {
+            background(0);
+            stroke(255, 215, 0);
+            strokeWeight(2);
+            branches.forEach(branch => {
+                line(branch.x1, branch.y1, branch.x2, branch.y2);
+            });
+        }
+
+        function generateCoral(x, y, angle, length, depth) {
+            if (depth > 0) {
+                let xEnd = x + cos(angle) * length;
+                let yEnd = y + sin(angle) * length;
+                branches.push({x1: x, y1: y, x2: xEnd, y2: yEnd});
+
+                let itemIndex = menuItems.length - depth;
+                if (itemIndex >= 0) {
+                    let button = createButton(menuItems[itemIndex]);
+                    button.position(xEnd, yEnd);
+                    button.style('color', 'yellow');
+                    button.style('background', 'transparent');
+                    button.style('border', 'none');
+                }
+
+                generateCoral(xEnd, yEnd, angle - PI / 6, length * 0.7, depth - 1);
+                generateCoral(xEnd, yEnd, angle + PI / 6, length * 0.7, depth - 1);
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            branches = [];
+            generateCoral(coralX, coralY, -PI / 2, 120, 4);
+        }
+    </script>
+</body>
+</html>
