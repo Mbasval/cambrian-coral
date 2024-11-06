@@ -16,29 +16,13 @@
             position: absolute;
             top: 20%;
             left: 60%;
-            max-width: 350px;
-            padding: 20px;
+            max-width: 300px;
+            padding: 10px;
             background-color: rgba(0, 0, 0, 0.7);
             border-radius: 5px;
-            color: #FFD700;
+            color: white;
             opacity: 0;
             transition: opacity 0.5s ease-in-out;
-            pointer-events: none; /* Makes it non-interactive */
-            z-index: 1;
-        }
-        h2, h3 {
-            margin: 10px 0;
-        }
-        p {
-            margin: 10px 0;
-            line-height: 1.6;
-        }
-        .line {
-            position: absolute;
-            background-color: #FFD700;
-            height: 2px;
-            width: 0;
-            transition: width 0.5s ease;
         }
     </style>
 </head>
@@ -46,13 +30,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
     <script>
         let menuItems = [
-            { title: "Home", subtitle: "Welcome Home", text: "Sample Text for Home" },
-            { title: "About", subtitle: "Who We Are", text: "Sample Text for About" },
-            { title: "Services", subtitle: "What We Do", text: "Sample Text for Services" },
-            { title: "Portfolio", subtitle: "Our Work", text: "Sample Text for Portfolio" },
-            { title: "Blog", subtitle: "Latest News", text: "Sample Text for Blog" }
+            { title: "Home", subtitle: "Welcome Home", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero." },
+            { title: "About", subtitle: "Who We Are", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero." },
+            { title: "Services", subtitle: "What We Do", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero." },
+            { title: "Portfolio", subtitle: "Our Work", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero." },
+            { title: "Blog", subtitle: "Latest News", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero." },
+            { title: "Contact", subtitle: "Get in Touch", text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero. Sed cursus ante dapibus diam. Sed nisi. Nulla quis sem at nibh elementum imperdiet. Duis sagittis ipsum. Praesent mauris. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer nec odio. Praesent libero." }
         ];
-
         let branches = [];
         let coralX, coralY;
         let maxDepth = 6;
@@ -63,7 +47,6 @@
         let waveMovement = 0;
         let selectedBranch = null;
         let descriptionElement = null;
-        let lineElement = null;
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
@@ -71,8 +54,6 @@
             coralY = height;
             generateCoral(coralX, coralY, -PI / 2, 200, maxDepth);
             descriptionElement = createDiv('').id('description');
-            lineElement = createDiv('').id('line').addClass('line');
-            console.log(branches);  // Debugging line
         }
 
         function draw() {
@@ -105,11 +86,9 @@
 
             if (closestBranch && closestBranch.label) {
                 lineProgress = min(lineProgress + 0.05, 1);
-                animateLine(closestBranch);
                 drawTextBox(closestBranch);
             } else {
                 showText = false; 
-                lineElement.style('width', '0px'); // Hide line
             }
 
             waveOffset += 0.01;
@@ -127,48 +106,51 @@
                     branches.push({
                         x1: x, y1: y, x2: xEnd, y2: yEnd, 
                         thickness: thickness, noiseOffset: noiseOffset, 
-                        depth: depth, label: menuItems[branches.length] 
+                        depth: depth, label: menuItems[branches.length % menuItems.length]
+                    });
+                } else {
+                    branches.push({
+                        x1: x, y1: y, x2: xEnd, y2: yEnd, 
+                        thickness: thickness, noiseOffset: noiseOffset, 
+                        depth: depth
                     });
                 }
 
-                generateCoral(xEnd, yEnd, angle + random(-angleVariation, angleVariation), length * 0.7, depth - 1);
-                generateCoral(xEnd, yEnd, angle + random(-angleVariation, angleVariation), length * 0.7, depth - 1);
+                generateCoral(xEnd, yEnd, angle - angleVariation, length * 0.75, depth - 1);
+                generateCoral(xEnd, yEnd, angle, length * 0.8, depth - 1);
+                generateCoral(xEnd, yEnd, angle + angleVariation, length * 0.75, depth - 1);
             }
         }
 
-        function animateLine(branch) {
-            let startX = branch.x1 + waveMovement;
-            let startY = branch.y1;
-            let endX = descriptionElement.elt.offsetLeft + 40;
-            let endY = descriptionElement.elt.offsetTop + 30;
-            let lineWidth = dist(startX, startY, endX, endY) * lineProgress;
-            lineElement.style('width', lineWidth + 'px');
-
-            let angle = atan2(endY - startY, endX - startY);
-            let offsetX = cos(angle) * lineWidth;
-            let offsetY = sin(angle) * lineWidth;
-
-            lineElement.style('left', startX + 'px');
-            lineElement.style('top', startY + 'px');
-            lineElement.style('transform', `rotate(${angle}rad)`);
-        }
-
         function drawTextBox(branch) {
-            descriptionElement.html(branch.label.title + '<br>' + branch.label.subtitle + branch.label.text);
-            descriptionElement.style('opacity', '1');
-        }
+            let textX = width * 0.6;
+            let textY = height * 0.2;
 
-        function mouseMoved() {
-            if (!selectedBranch) {
-                showText = false;
+            let lineX = lerp(branch.x2 + waveMovement, textX, lineProgress);
+            let lineY = lerp(branch.y2, textY, lineProgress);
+
+            if (lineProgress > 0) {
+                stroke(255, 215, 0, 180);
+                strokeWeight(1);
+                line(branch.x2 + waveMovement, branch.y2, lineX, lineY);
+            }
+
+            if (showText && selectedBranch) {
+                descriptionElement.html(`
+                    <h2>${selectedBranch.label.title}</h2>
+                    <h3>${selectedBranch.label.subtitle}</h3>
+                    <p>${selectedBranch.label.text}</p>
+                `);
+                descriptionElement.style('opacity', 1);
             }
         }
 
         function windowResized() {
             resizeCanvas(windowWidth, windowHeight);
-            coralX = width * 0.3;
-            coralY = height;
+            branches = [];
+            generateCoral(coralX, coralY, -PI / 2, 200, maxDepth);
         }
     </script>
 </body>
 </html>
+
