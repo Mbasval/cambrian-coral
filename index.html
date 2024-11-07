@@ -30,8 +30,6 @@
         let maxDepth = 6;
         let waveOffset = 0;
         let closestBranch = null;
-        let showText = false;
-        let lineProgress = 0;
 
         function setup() {
             createCanvas(windowWidth, windowHeight);
@@ -42,7 +40,7 @@
 
         function draw() {
             background(0);
-            stroke(255, 215, 0, 180);
+            stroke(255, 215, 0);
             let minDist = Infinity;
             closestBranch = null;
 
@@ -51,28 +49,22 @@
                 if (d < minDist) {
                     minDist = d;
                     closestBranch = branch;
-                    showText = true;
-                    lineProgress = 0; // Reset line animation
                 }
 
-                let openFactor = constrain(map(d, 0, 300, 0.6, 1), 0.6, 1);
+                let openFactor = constrain(map(d, 0, 300, 0.7, 1), 0.7, 1);
                 let branchAngleOffset = sin(waveOffset + branch.noiseOffset) * 5 * (1 / (branch.depth + 1));
                 let x2 = lerp(branch.x1, branch.x2 + branchAngleOffset, openFactor);
                 let y2 = lerp(branch.y1, branch.y2 + branchAngleOffset, openFactor);
 
-                strokeWeight(branch.thickness); 
-                stroke(255, 215, 0, 150 + 50 * sin(branch.noiseOffset)); // Adds transparency
+                strokeWeight(branch.thickness); // Solid color for main branches
                 line(branch.x1, branch.y1, x2, y2);
             });
 
             if (closestBranch && closestBranch.label) {
-                lineProgress = min(lineProgress + 0.05, 1); // Line animation progress
                 drawTextBox(closestBranch);
-            } else {
-                showText = false; // Hide text when not hovering any branch
             }
 
-            waveOffset += 0.01; // Subtle underwater movement
+            waveOffset += 0.01;  // Subtle underwater movement
         }
 
         function generateCoral(x, y, angle, length, depth) {
@@ -80,7 +72,7 @@
                 let angleVariation = PI / 9; // Reduced for a unified fan shape
                 let xEnd = x + cos(angle) * length;
                 let yEnd = y + sin(angle) * length;
-
+                
                 let thickness = map(depth, maxDepth, 1, 18, 2);
                 let noiseOffset = random(1000);
                 branches.push({
@@ -99,26 +91,21 @@
             let textX = width * 0.6;
             let textY = height * 0.2;
 
-            // Line animates from branch to text position
-            let lineX = lerp(branch.x2, textX, lineProgress);
-            let lineY = lerp(branch.y2, textY, lineProgress);
-
+            // Draw connection line from branch to text box
             stroke(255, 215, 0, 180);
             strokeWeight(1);
-            line(branch.x2, branch.y2, lineX, lineY);
+            line(branch.x2, branch.y2, textX, textY);
 
-            // Display title, subtitle, and paragraph at fixed position if hovering
-            if (showText) {
-                fill(255, 215, 0);
-                noStroke();
-                textAlign(LEFT, TOP);
-                textSize(20);
-                text(branch.label.title, textX, textY);
-                textSize(14);
-                text(branch.label.subtitle, textX, textY + 24);
-                textSize(12);
-                text(branch.label.text, textX, textY + 50, 300, 200); // Long placeholder text
-            }
+            // Draw the title, subtitle, and paragraph at a fixed position
+            fill(255, 215, 0);
+            noStroke();
+            textAlign(LEFT, TOP);
+            textSize(20);
+            text(branch.label.title, textX, textY);
+            textSize(14);
+            text(branch.label.subtitle, textX, textY + 24);
+            textSize(12);
+            text(branch.label.text, textX, textY + 50, 300, 200); // Long placeholder text for lore ipsum
         }
 
         function windowResized() {
@@ -129,3 +116,4 @@
     </script>
 </body>
 </html>
+
