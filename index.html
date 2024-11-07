@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cambrian Coral Tree with Animated Lines</title>
+  <title>Cambrian Coral Tree</title>
   <style>
     body {
       margin: 0;
@@ -18,39 +18,35 @@
 <body>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
   <script>
-    let branches = [];
+    let coralTree = [];
     let activeBranch = null;
     let lineProgress = 0;
 
     function setup() {
       createCanvas(windowWidth, windowHeight);
-      textSize(16); // Smaller font size
+      textSize(14); // Smaller font size
       fill(255, 255, 0); // Yellow font color
       noLoop();
-
-      // Define branches with example positions and labels
-      branches = [
-        { x: 200, y: 300, label: 'Branch A' },
-        { x: 400, y: 150, label: 'Branch B' },
-        { x: 600, y: 400, label: 'Branch C' }
-      ];
+      
+      // Create coral structure with branches
+      createCoralTree();
     }
 
     function draw() {
       background(0);
-
-      for (let branch of branches) {
+      
+      // Draw each branch and its label
+      for (let branch of coralTree) {
         drawBranch(branch);
 
+        // Animate line if branch is active
         if (branch === activeBranch) {
-          // Animate line growth
           let lineEndX = lerp(branch.x, width / 2, lineProgress);
-          let lineEndY = lerp(branch.y, height / 2, lineProgress);
+          let lineEndY = lerp(branch.y, height / 4, lineProgress); // Position title higher up
           
           stroke(255, 255, 0); // Yellow line
           line(branch.x, branch.y, lineEndX, lineEndY);
           
-          // If line is close enough to the title, stop extending
           if (lineProgress < 1) {
             lineProgress += 0.05;
           }
@@ -60,23 +56,50 @@
       drawTitle();
     }
 
+    function createCoralTree() {
+      // Generate initial coral branches
+      let centerX = width / 2;
+      let baseY = height - 100; // Start near the bottom of the screen
+      let branchHeight = 60;
+      
+      // Create a few levels of branches
+      for (let i = 0; i < 5; i++) {
+        let offsetX = random(-150, 150);
+        let offsetY = -i * branchHeight;
+        
+        // Main branches growing upwards and outwards
+        coralTree.push({ x: centerX + offsetX, y: baseY + offsetY, label: `Branch ${i + 1}` });
+        
+        // Add sub-branches for each main branch
+        for (let j = 0; j < 3; j++) {
+          let subOffsetX = offsetX + random(-50, 50);
+          let subOffsetY = offsetY - random(40, 60);
+          coralTree.push({ x: centerX + subOffsetX, y: baseY + subOffsetY, label: `Sub-branch ${i + 1}.${j + 1}` });
+        }
+      }
+    }
+
     function drawBranch(branch) {
-      ellipse(branch.x, branch.y, 20, 20); // Representing branch as a small circle
-      if (dist(mouseX, mouseY, branch.x, branch.y) < 30) {
+      // Draw branch as a point with a label
+      ellipse(branch.x, branch.y, 8, 8); // Represent branch as a small circle
+      text(branch.label, branch.x + 10, branch.y); // Label each branch
+
+      // Detect if mouse is near the branch
+      if (dist(mouseX, mouseY, branch.x, branch.y) < 20) {
         activeBranch = branch;
         lineProgress = 0; // Reset line growth
-        loop();
-      } else if (activeBranch === branch && dist(mouseX, mouseY, branch.x, branch.y) >= 30) {
+        loop(); // Redraw
+      } else if (activeBranch === branch && dist(mouseX, mouseY, branch.x, branch.y) >= 20) {
         activeBranch = null;
-        noLoop();
+        noLoop(); // Stop redrawing when mouse is away
       }
     }
 
     function drawTitle() {
       textAlign(CENTER, CENTER);
       textSize(16);
-      fill(255, 255, 0); // Yellow font color
-      text("Main Title", width / 2, height / 2);
+      fill(255, 255, 0); // Yellow font color for title
+      text("Main Title", width / 2, height / 4); // Position title towards the top
     }
 
     function windowResized() {
